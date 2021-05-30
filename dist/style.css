@@ -1,0 +1,44 @@
+  
+body{
+    background-color: white;
+}
+.navbar-header {
+    float: left;
+    padding: 15px;
+    text-align: center;
+    width: 100%;
+    }
+
+.navbar-brand {
+    float:none;
+    font-size: 35px;}
+
+.navbar{
+    background: lightblue;
+    color: white;
+}
+
+.card{
+    margin: 20px;
+    padding: 0;
+}
+
+
+
+.card-header{
+    background: blue
+}
+
+.card-title {
+    color:white;
+}
+
+.text-muted {
+    color:white;
+}
+
+.list-group{
+    margin: 10px;
+    border: solid 2px black;
+    
+}
