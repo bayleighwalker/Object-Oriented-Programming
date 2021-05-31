@@ -1,29 +1,18 @@
 {
-  "name": "OOP",
+  "name": "src",
   "version": "1.0.0",
-  "description": "OOP, generating webpage that displays team info so i have quick access to individual profiles. ",
-  "main": "app.js",
-  "directories": {
-    "lib": "lib",
-    "test": "test"
-  },
+  "description": "",
+  "main": "index.js",
   "scripts": {
-    "test": "jest --verbose test/*"
+    "test": "jest"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/bayleighwalker/Object-Oriented-Programming.git"
-  },
+  "keywords": [],
   "author": "",
   "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/bayleighwalker/Object-Oriented-Programming/issues"
-  },
-  "homepage": "https://github.com/bayleighwalker/Object-Oriented-Programming#readme",
   "dependencies": {
-    "inquirer": "^8.1.0"
+    "inquirer": "^7.3.3"
   },
   "devDependencies": {
-    "jest": "^27.0.1"
+    "jest": "^26.6.3"
   }
 }

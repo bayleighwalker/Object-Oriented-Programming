@@ -1,165 +1,175 @@
-const fs = require("fs");
-const inquirer = require("inquirer");
 
-const Manager = require("./lib/Manager");
-const Engineer = require("./lib/Engineer");
-const Intern = require("./lib/Intern");
+const fs = require('fs');
 
-const path = require("path");
+const inquirer = require('inquirer');
 
-
-const OUTPUT_DIR = path.resolve(__dirname, "output");
-const outputPath = path.join(OUTPUT_DIR, "team.html");
-
-const render = require("./lib/htmlRenderer");
-const { countReset } = require("console");
-const { create } = require("domain");
+const Employee = require('./lib/Employee');
+const Engineer = require('./lib/Engineer');
+const Intern = require('./lib/Intern');
+const Manager = require('./lib/Manager');
 
 
-const people = [];
+const generateTemplate = require('./src/layout-template');
 
-const getPersonInfo = () => {
-   inquirer.prompt([
-    {
-      type: "input",
-      message: "What is your manager's name?",
-      name: "managername",
-    },
-    {
-      type: "input",
-      message: "What is your manager's id?",
-      name: "managerid",
-    },
-    {
-      type: "input",
-      message: "What is your manager's email?",
-      name: "manageremail",
-    },
-    {
-      type: "input",
-      message: "What is your manager's office number?",
-      name: "manageroffice",
-    },
-  
-  ]).then((managerInfo) =>{
-    createManager(managerInfo)
-  })
-};
 
-const createManager = (personInfo) => {
-  const manager = new Manager (personInfo.managername, personInfo.managerid, personInfo.manageremail, personInfo.manageroffice)
-  people.push(manager);
-  loop();
-};
 
-const createEngineer = (personInfo) => {
-  const engineer = new Engineer (personInfo.engineername, personInfo.engineerid, personInfo.engineeremail, personInfo.engineergit)
-  people.push(engineer);
-  loop();
-};
+const generateHtml = require('./generate-html');
 
-const createIntern = (personInfo) => {
-  const intern = new Intern (personInfo.internname, personInfo.internrid, personInfo.internemail, personInfo.internschool)
-  people.push(intern);
-  loop();
-};
 
-const createTeam = () => {
-  if (!fs.existsSync(OUTPUT_DIR)){
-    fs.mkdirSync(OUTPUT_DIR);
-  }fs.writeFileSync(outputPath, render(people), "utf-8");
 
+const teamMembers = []
+
+
+
+function userInfo() {
+    inquirer.prompt([
+        {
+            type: 'input',
+            message: 'Enter Employee Name: ',
+            name: 'name',
+            validate: function (nameInput) {
+                if (nameInput) {
+                    return true;
+                } else {
+                    return 'Please enter Employee Name.';
+                }
+            }
+        },
+
+        {
+            type: 'input',
+            message: 'Enter Email: ',
+            name: 'email',
+            validate: function (emailInput) {
+                if (emailInput) {
+                    return true;
+                } else {
+                    return 'Please enter Employee e-mail address.';
+                }
+            }
+        },
+
+        {
+            type: 'input',
+            message: 'Enter Employee Id: ',
+            name: 'id',
+            validate: function (idInput) {
+                if (idInput) {
+                    return true;
+                } else {
+                    return 'Please enter Employee Id.';
+                }
+            }
+        },
+
+
+
+        {
+            type: 'list',
+            message: 'Select Role: ',
+            name: 'role',
+            choices: ["Manager", "Engineer", "Intern"]
+
+        },
+
+    ])
+    .then(answers => {
+
+            if (answers.role === 'Manager') {
+                inquirer.prompt([
+                    {
+                        type: 'input',
+                        name: 'office',
+                        message:'Enter office number:',
+                        validate: officeInput => {
+                            if (officeInput) {
+                                return true;
+                            } else {
+                                return 'Please enter office No.';
+                            }
+                        }
+                        
+                    }
+                ])
+                .then(response => {
+                    console.log(response.office);
+                    const ManagerTeam = new Manager (answers.name, answers.email, answers.id, answers.role, response.office)
+                    teamMembers.push(ManagerTeam);
+                    addOption()
+                })
+            }else if(answers.role === 'Engineer' ){
+                inquirer.prompt([
+                    {
+                        type: 'input',
+                        name: 'gitHub',
+                        message:'Enter Github name:',
+                        validate: githubInput => {
+                            if (githubInput) {
+                                return true;
+                            } else {
+                                return 'Please enter gitHub username.';
+                            }
+                        }
+                    }
+                ])
+                .then(response => {
+                    console.log(response.gitHub);
+                    const EngineerTeam = new Engineer (answers.name, answers.email, answers.id, answers.role, response.gitHub)
+                    teamMembers.push(EngineerTeam);
+                    addOption()
+                })
+            } else if (answers.role === 'Intern'){
+                inquirer.prompt([
+                    {
+                        type: 'input',
+                        name: 'school',
+                        message:'Enter School name:', 
+                        validate: function (schoolInput) {
+                            if (schoolInput) {
+                                return true;
+                            } else {
+                                return 'Please enter school  name.';
+                            }
+                        }
+
+                    }
+                ])
+                .then(response =>{
+                    console.log(response.school);
+                    const internTeam = new Intern (answers.name,  answers.email, answers.id, answers.role, response.school)
+                    teamMembers.push(internTeam);
+                    addOption()
+                })
+            }
+
+            else {
+                const employeeTeam = new Employee (answers.name, answers.email, answers.id, answers.role);
+                teamMembers.push(employeeTeam);
+                addOption()
+
+            }
+
+            function addOption() {
+                inquirer.prompt([
+                    {
+                        type:'confirm',
+                        name: 'addMore',
+                        message:'Would you like to add another Employee?'
+                    }
+                ])
+                .then(res =>{
+                    if(res.addMore === true){
+                        userInfo(teamMembers);
+                    }else{
+                        console.log('team', teamMembers)
+                        let cardLayoutHtml = generateTemplate(teamMembers);
+                        generateHtml(cardLayoutHtml)
+                    }
+                })
+            }
+        })
 }
 
-const getEngineerInfo = () => {
-  inquirer.prompt ([
-    {
-      type:"input",
-      message:"What is the Engineers name?",
-      name:'engineername',
-    },
-    {
-      type:"input",
-      message:"What is the Engineers id?",
-      name:'engineerid',
-    },
-    {
-      type:"input",
-      message:"What is the Engineers email",
-      name:'engineeremail',
-    },
-    {
-      type:"input",
-      message:"What is the Engineers Github?",
-      name:'engineergit',
-    }
-    
 
-  ]).then((engineeringInfo) => {
-   createEngineer(engineeringInfo)
-  }) 
-
-}
-
-const getInternInfo = () => {
-  inquirer.prompt ([
-    {
-      type:"input",
-      message:"What is the Intern's name?",
-      name:'internname',
-    },
-    {
-      type:"input",
-      message:"What is the Intern's id?",
-      name:'internrid',
-    },
-    {
-      type:"input",
-      message:"What is the Intern's email?",
-      name:'internemail',
-    },
-    {
-      type:"input",
-      message:"What is the Interns Schools?",
-      name:'internschool',
-    }
-    
-
-  ]).then((internInfo) => {
-   createIntern(internInfo)
-  }) 
-
-}
-
-const loop = () => {
- inquirer.prompt([
-   {
-     type: "list",
-     name: "teammember",
-     choices: [
-       "Engineer", "Intern", "I dont want to add any more team members."
-     ]
-   }
- ])
-    .then((personInfo) => {
-
-      switch(personInfo.teammember){
-        case 'I dont want to add any more team members.':
-          createTeam();
-        break;
-
-        case 'Engineer':
-        getEngineerInfo()
-        break;
-
-        
-        case 'Intern':
-        getInternInfo()
-        break;
-      }
-    })
-
-};
-
-getPersonInfo();
+userInfo();
 
